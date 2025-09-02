@@ -8,11 +8,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+        
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px;
+            min-height: 100vh;
         }
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -21,6 +32,7 @@
             border-radius: 12px;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
+        
         .header {
             display: flex;
             align-items: center;
@@ -29,84 +41,106 @@
             padding-bottom: 20px;
             border-bottom: 2px solid #e9ecef;
         }
+        
         .header-content {
             text-align: right;
             flex-grow: 1;
         }
+        
         .header h1 {
-            color: #2c3e50;
+            color: var(--secondary-color);
             margin-bottom: 10px;
+            font-weight: 700;
         }
+        
         .header p {
             color: #7f8c8d;
             font-size: 1.1em;
         }
+        
         .logo {
             width: 180px;
             height: 60px;
             object-fit: contain;
         }
+        
         .card {
             border: none;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin-bottom: 25px;
+            transition: transform 0.3s ease;
         }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
         .card-header {
-            background: linear-gradient(135deg, #3498db, #2c3e50);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border-radius: 10px 10px 0 0 !important;
             padding: 15px 20px;
             font-weight: 600;
         }
+        
         .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
+            background: linear-gradient(135deg, var(--primary-color), #2980b9);
             border: none;
             padding: 10px 20px;
             font-weight: 600;
             transition: all 0.3s;
         }
+        
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
+        
         .btn-info {
-            background: linear-gradient(135deg, #17a2b8, #138496);
+            background: linear-gradient(135deg, var(--info-color), #138496);
             border: none;
         }
+        
         .btn-success {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, var(--success-color), #20c997);
             border: none;
         }
+        
         .btn-warning {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            background: linear-gradient(135deg, var(--warning-color), #fd7e14);
             border: none;
             color: white;
         }
+        
         .btn-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333);
+            background: linear-gradient(135deg, var(--danger-color), #c82333);
             border: none;
         }
+        
         .table th {
             background: #f8f9fa;
-            color: #2c3e50;
+            color: var(--secondary-color);
             font-weight: 600;
             border-top: none;
         }
+        
         .time-inputs {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
+        
         .travel-time-section {
             background: #fff3cd;
             padding: 20px;
             border-radius: 8px;
             margin-top: 15px;
-            border-left: 4px solid #ffc107;
+            border-left: 4px solid var(--warning-color);
             display: none;
         }
+        
         .alert-box {
             position: fixed;
             top: 20px;
@@ -114,6 +148,7 @@
             z-index: 1050;
             min-width: 300px;
         }
+        
         .calculated-hours {
             background: #d4edda;
             color: #155724;
@@ -123,6 +158,7 @@
             margin-top: 10px;
             display: inline-block;
         }
+        
         .travel-calculated-hours {
             background: #ffeaa7;
             color: #856404;
@@ -132,28 +168,51 @@
             margin-top: 10px;
             display: inline-block;
         }
+        
         .edit-mode {
-            border: 2px solid #3498db;
+            border: 2px solid var(--primary-color);
             box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
         }
+        
+        .storage-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
                 text-align: center;
             }
+            
             .header-content {
                 text-align: center;
                 width: 100%;
                 margin-top: 15px;
             }
+            
             .container {
                 padding: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Storage Warning -->
+        <div class="storage-warning" id="storageWarning" style="display: none;">
+            <h5><i class="fas fa-exclamation-triangle me-2"></i>Local Storage Not Available</h5>
+            <p class="mb-0">Your browser is blocking local storage. Data will be saved temporarily but will be lost when you close the browser.</p>
+        </div>
+
         <!-- Header Section -->
         <div class="header">
             <img src="https://ethosautomation.com/wp-content/uploads/2022/04/Logo.png" alt="Ethos Automation Logo" class="logo">
@@ -435,12 +494,24 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Global variable to store records if localStorage is not available
+        let memoryStorage = [];
+        let storageAvailable = true;
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
         });
 
         function initializeApp() {
+            // Check if localStorage is available
+            storageAvailable = isLocalStorageAvailable();
+            
+            if (!storageAvailable) {
+                document.getElementById('storageWarning').style.display = 'block';
+                showAlert('Local storage is not available. Data will be saved in memory only.', 'warning');
+            }
+            
             // Set current date as default
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date').value = today;
@@ -489,6 +560,48 @@
             showAlert('Application loaded successfully!', 'success');
         }
 
+        function isLocalStorageAvailable() {
+            try {
+                const test = 'test';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function getStorage() {
+            if (storageAvailable) {
+                try {
+                    const storedRecords = localStorage.getItem('hourRecords');
+                    return storedRecords ? JSON.parse(storedRecords) : [];
+                } catch (e) {
+                    console.error('Error reading from localStorage:', e);
+                    storageAvailable = false;
+                    document.getElementById('storageWarning').style.display = 'block';
+                    return memoryStorage;
+                }
+            } else {
+                return memoryStorage;
+            }
+        }
+
+        function setStorage(records) {
+            if (storageAvailable) {
+                try {
+                    localStorage.setItem('hourRecords', JSON.stringify(records));
+                } catch (e) {
+                    console.error('Error saving to localStorage:', e);
+                    storageAvailable = false;
+                    document.getElementById('storageWarning').style.display = 'block';
+                    memoryStorage = records;
+                }
+            } else {
+                memoryStorage = records;
+            }
+        }
+
         function populateHourDropdowns() {
             const hourSelects = ['startHour', 'endHour', 'travelStartHour', 'travelEndHour'];
             
@@ -512,7 +625,7 @@
         function setCurrentTime(field) {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(Math.floor(now.getMinutes() / 15) * 15).padStart(2, '0'); // Round to nearest 15 minutes
+            const minutes = String(Math.floor(now.getMinutes() / 15) * 15).padStart(2, '0');
             
             if (field === 'start') {
                 document.getElementById('startHour').value = hours;
@@ -581,7 +694,7 @@
             const startTotalMinutes = parseInt(travelStartHour) * 60 + parseInt(travelStartMinute);
             let endTotalMinutes = parseInt(travelEndHour) * 60 + parseInt(travelEndMinute);
             
-            // Handle overnight travel (unlikely but possible)
+            // Handle overnight travel
             if (endTotalMinutes < startTotalMinutes) {
                 endTotalMinutes += 24 * 60;
             }
@@ -684,32 +797,17 @@
             };
             
             // Save to storage
-            let records = [];
-            try {
-                const storedRecords = localStorage.getItem('hourRecords');
-                if (storedRecords) {
-                    records = JSON.parse(storedRecords);
-                }
-            } catch (e) {
-                console.error('Error reading from storage:', e);
-            }
-            
+            const records = getStorage();
             records.push(record);
+            setStorage(records);
             
-            try {
-                localStorage.setItem('hourRecords', JSON.stringify(records));
-                showAlert('Record saved successfully!', 'success');
-                
-                // Reset form
-                resetForm();
-                
-                // Reload records table
-                loadRecords();
-                
-            } catch (e) {
-                console.error('Error saving to storage:', e);
-                showAlert('Error saving record. Please try again.', 'danger');
-            }
+            showAlert('Record saved successfully!', 'success');
+            
+            // Reset form
+            resetForm();
+            
+            // Reload records table
+            loadRecords();
         }
 
         function updateRecord() {
@@ -755,17 +853,7 @@
                 workedHoursFormatted;
             
             // Get existing records
-            let records = [];
-            try {
-                const storedRecords = localStorage.getItem('hourRecords');
-                if (storedRecords) {
-                    records = JSON.parse(storedRecords);
-                }
-            } catch (e) {
-                console.error('Error reading from storage:', e);
-                showAlert('Error updating record', 'danger');
-                return;
-            }
+            const records = getStorage();
             
             // Find and update record
             const recordIndex = records.findIndex(record => record.id == id);
@@ -794,36 +882,20 @@
                 totalHours: totalHoursFormatted
             };
             
-            try {
-                localStorage.setItem('hourRecords', JSON.stringify(records));
-                showAlert('Record updated successfully!', 'success');
-                
-                // Reset form and exit edit mode
-                resetForm();
-                exitEditMode();
-                
-                // Reload records table
-                loadRecords();
-                
-            } catch (e) {
-                console.error('Error saving to storage:', e);
-                showAlert('Error updating record. Please try again.', 'danger');
-            }
+            setStorage(records);
+            showAlert('Record updated successfully!', 'success');
+            
+            // Reset form and exit edit mode
+            resetForm();
+            exitEditMode();
+            
+            // Reload records table
+            loadRecords();
         }
 
         function editRecord(id) {
             // Get existing records
-            let records = [];
-            try {
-                const storedRecords = localStorage.getItem('hourRecords');
-                if (storedRecords) {
-                    records = JSON.parse(storedRecords);
-                }
-            } catch (e) {
-                console.error('Error reading from storage:', e);
-                showAlert('Error loading record for editing', 'danger');
-                return;
-            }
+            const records = getStorage();
             
             // Find the record
             const record = records.find(record => record.id == id);
@@ -917,16 +989,7 @@
         }
 
         function loadRecords() {
-            let records = [];
-            try {
-                const storedRecords = localStorage.getItem('hourRecords');
-                if (storedRecords) {
-                    records = JSON.parse(storedRecords);
-                }
-            } catch (e) {
-                console.error('Error reading from storage:', e);
-            }
-            
+            const records = getStorage();
             const tableBody = document.getElementById('recordsTable');
             const noRecords = document.getElementById('noRecords');
             
@@ -1005,26 +1068,12 @@
                 return;
             }
             
-            let records = [];
-            try {
-                const storedRecords = localStorage.getItem('hourRecords');
-                if (storedRecords) {
-                    records = JSON.parse(storedRecords);
-                }
-            } catch (e) {
-                console.error('Error reading from storage:', e);
-            }
+            const records = getStorage();
+            const newRecords = records.filter(record => record.id !== id);
+            setStorage(newRecords);
             
-            records = records.filter(record => record.id !== id);
-            
-            try {
-                localStorage.setItem('hourRecords', JSON.stringify(records));
-                showAlert('Record deleted successfully', 'success');
-                loadRecords();
-            } catch (e) {
-                console.error('Error saving to storage:', e);
-                showAlert('Error deleting record', 'danger');
-            }
+            showAlert('Record deleted successfully', 'success');
+            loadRecords();
         }
 
         function clearStorage() {
@@ -1032,28 +1081,13 @@
                 return;
             }
             
-            try {
-                localStorage.removeItem('hourRecords');
-                showAlert('All records have been deleted', 'success');
-                loadRecords();
-            } catch (e) {
-                console.error('Error clearing storage:', e);
-                showAlert('Error clearing records', 'danger');
-            }
+            setStorage([]);
+            showAlert('All records have been deleted', 'success');
+            loadRecords();
         }
 
         function generateReport() {
-            let records = [];
-            try {
-                const storedRecords = localStorage.getItem('hourRecords');
-                if (storedRecords) {
-                    records = JSON.parse(storedRecords);
-                }
-            } catch (e) {
-                console.error('Error reading from storage:', e);
-                showAlert('Error generating report', 'danger');
-                return;
-            }
+            const records = getStorage();
             
             if (records.length === 0) {
                 showAlert('No records to generate report', 'warning');
@@ -1090,7 +1124,7 @@
             const monthlySummary = {};
             
             records.forEach(record => {
-                const yearMonth = record.date.substring(0, 7); // YYYY-MM format
+                const yearMonth = record.date.substring(0, 7);
                 if (!monthlySummary[yearMonth]) {
                     monthlySummary[yearMonth] = 0;
                 }
@@ -1100,7 +1134,6 @@
             // Generate HTML for date summary
             let dateHTML = '';
             for (const month in monthlySummary) {
-                // Format month for better display
                 const [year, monthNum] = month.split('-');
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                                    'July', 'August', 'September', 'October', 'November', 'December'];
@@ -1129,17 +1162,7 @@
         }
 
         function exportToExcel() {
-            let records = [];
-            try {
-                const storedRecords = localStorage.getItem('hourRecords');
-                if (storedRecords) {
-                    records = JSON.parse(storedRecords);
-                }
-            } catch (e) {
-                console.error('Error reading from storage:', e);
-                showAlert('Error exporting data', 'danger');
-                return;
-            }
+            const records = getStorage();
             
             if (records.length === 0) {
                 showAlert('No records to export', 'warning');
