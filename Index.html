@@ -510,6 +510,17 @@
             if (!storageAvailable) {
                 document.getElementById('storageWarning').style.display = 'block';
                 showAlert('Local storage is not available. Data will be saved in memory only.', 'warning');
+            } else {
+                // Test if we can actually write to localStorage
+                try {
+                    const testKey = 'storageTest';
+                    localStorage.setItem(testKey, 'test');
+                    localStorage.removeItem(testKey);
+                } catch (e) {
+                    storageAvailable = false;
+                    document.getElementById('storageWarning').style.display = 'block';
+                    showAlert('Local storage is not writable. Data will be saved in memory only.', 'warning');
+                }
             }
             
             // Set current date as default
@@ -580,6 +591,7 @@
                     console.error('Error reading from localStorage:', e);
                     storageAvailable = false;
                     document.getElementById('storageWarning').style.display = 'block';
+                    showAlert('Error reading from storage. Using memory storage.', 'warning');
                     return memoryStorage;
                 }
             } else {
@@ -591,10 +603,16 @@
             if (storageAvailable) {
                 try {
                     localStorage.setItem('hourRecords', JSON.stringify(records));
+                    // Verify the data was actually saved
+                    const verify = localStorage.getItem('hourRecords');
+                    if (!verify) {
+                        throw new Error('Data not persisted in localStorage');
+                    }
                 } catch (e) {
                     console.error('Error saving to localStorage:', e);
                     storageAvailable = false;
                     document.getElementById('storageWarning').style.display = 'block';
+                    showAlert('Error saving to storage. Using memory storage.', 'warning');
                     memoryStorage = records;
                 }
             } else {
