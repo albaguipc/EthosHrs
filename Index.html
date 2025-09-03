@@ -169,11 +169,6 @@
             display: inline-block;
         }
         
-        .edit-mode {
-            border: 2px solid var(--primary-color);
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
-        }
-        
         .storage-warning {
             background-color: #fff3cd;
             border-left: 4px solid var(--warning-color);
@@ -228,11 +223,10 @@
         <!-- Form Section -->
         <div class="card mb-4" id="formCard">
             <div class="card-header">
-                <i class="fas fa-plus-circle me-2"></i><span id="formTitle">Register New Hours</span>
+                <i class="fas fa-plus-circle me-2"></i>Register New Hours
             </div>
             <div class="card-body">
                 <form id="hourForm">
-                    <input type="hidden" id="editId" value="">
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3">
                             <label for="date" class="form-label">Date</label>
@@ -368,11 +362,8 @@
                         <div class="row mt-4">
                             <div class="col-12 d-flex justify-content-between">
                                 <div>
-                                    <button type="submit" class="btn btn-primary" id="saveButton">
-                                        <i class="fas fa-save me-2"></i><span id="saveButtonText">Save Record</span>
-                                    </button>
-                                    <button type="button" class="btn btn-secondary" id="cancelEdit" style="display: none;">
-                                        <i class="fas fa-times me-2"></i>Cancel Edit
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Record
                                     </button>
                                 </div>
                                 <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
@@ -547,7 +538,7 @@
             // Form submission
             document.getElementById('hourForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                handleFormSubmit();
+                saveRecord();
             });
             
             // Other buttons
@@ -555,7 +546,6 @@
             document.getElementById('clearStorage').addEventListener('click', clearStorage);
             document.getElementById('generateReport').addEventListener('click', generateReport);
             document.getElementById('hideReport').addEventListener('click', hideReport);
-            document.getElementById('cancelEdit').addEventListener('click', cancelEdit);
             
             // Travel time toggle
             document.getElementById('includeTravelTime').addEventListener('change', function() {
@@ -578,14 +568,6 @@
                     }
                 });
             });
-        }
-
-        function handleFormSubmit() {
-            if (document.getElementById('editId').value) {
-                updateRecord();
-            } else {
-                saveRecord();
-            }
         }
 
         function getStorage() {
@@ -827,173 +809,6 @@
             loadRecords();
         }
 
-        function updateRecord() {
-            const id = document.getElementById('editId').value;
-            
-            // Get form values
-            const date = document.getElementById('date').value;
-            const project = document.getElementById('project').value;
-            const description = document.getElementById('description').value;
-            const startHour = document.getElementById('startHour').value;
-            const startMinute = document.getElementById('startMinute').value;
-            const endHour = document.getElementById('endHour').value;
-            const endMinute = document.getElementById('endMinute').value;
-            const breakTime = document.getElementById('breakTime').value;
-            const includeTravel = document.getElementById('includeTravelTime').checked;
-            const travelStartHour = document.getElementById('travelStartHour').value;
-            const travelStartMinute = document.getElementById('travelStartMinute').value;
-            const travelEndHour = document.getElementById('travelEndHour').value;
-            const travelEndMinute = document.getElementById('travelEndMinute').value;
-            const travelDetails = document.getElementById('travelDetails').value;
-            
-            // Validate required fields
-            if (!date || !project || !description || !startHour || !startMinute || !endHour || !endMinute) {
-                showAlert('Please fill in all required fields', 'danger');
-                return;
-            }
-            
-            if (includeTravel && (!travelStartHour || !travelStartMinute || !travelEndHour || !travelEndMinute)) {
-                showAlert('Please complete travel time fields', 'danger');
-                return;
-            }
-            
-            // Calculate times
-            const workedMinutes = calculateHours();
-            const travelMinutes = includeTravel ? calculateTravelTime() : 0;
-            const totalMinutes = workedMinutes + travelMinutes;
-            
-            // Convert to display format
-            const workedHoursFormatted = document.getElementById('calculatedHours').textContent;
-            const travelHoursFormatted = includeTravel ? document.getElementById('calculatedTravelTime').textContent : '';
-            const totalHoursFormatted = includeTravel ? 
-                `${Math.floor(totalMinutes / 60)}:${(totalMinutes % 60).toString().padStart(2, '0')} hours` : 
-                workedHoursFormatted;
-            
-            // Get existing records
-            const records = getStorage();
-            
-            // Find and update record
-            const recordIndex = records.findIndex(record => record.id == id);
-            if (recordIndex === -1) {
-                showAlert('Record not found', 'danger');
-                return;
-            }
-            
-            records[recordIndex] = {
-                id: id,
-                date: date,
-                project: project,
-                description: description,
-                startTime: `${startHour}:${startMinute}`,
-                endTime: `${endHour}:${endMinute}`,
-                breakTime: breakTime,
-                hours: workedHoursFormatted,
-                minutes: workedMinutes,
-                includeTravel: includeTravel,
-                travelStartTime: includeTravel ? `${travelStartHour}:${travelStartMinute}` : '',
-                travelEndTime: includeTravel ? `${travelEndHour}:${travelEndMinute}` : '',
-                travelMinutes: travelMinutes,
-                travelHours: travelHoursFormatted,
-                travelDetails: travelDetails,
-                totalMinutes: totalMinutes,
-                totalHours: totalHoursFormatted
-            };
-            
-            setStorage(records);
-            showAlert('Record updated successfully!', 'success');
-            
-            // Reset form and exit edit mode
-            resetForm();
-            exitEditMode();
-            
-            // Reload records table
-            loadRecords();
-        }
-
-        function editRecord(id) {
-            // Get existing records
-            const records = getStorage();
-            
-            // Find the record
-            const record = records.find(record => record.id == id);
-            if (!record) {
-                showAlert('Record not found', 'danger');
-                return;
-            }
-            
-            // Enter edit mode
-            enterEditMode();
-            
-            // Fill form with record data
-            document.getElementById('editId').value = record.id;
-            document.getElementById('date').value = record.date;
-            document.getElementById('project').value = record.project;
-            document.getElementById('description').value = record.description;
-            
-            // Set work time
-            const [startHour, startMinute] = record.startTime.split(':');
-            document.getElementById('startHour').value = startHour;
-            document.getElementById('startMinute').value = startMinute;
-            
-            const [endHour, endMinute] = record.endTime.split(':');
-            document.getElementById('endHour').value = endHour;
-            document.getElementById('endMinute').value = endMinute;
-            
-            document.getElementById('breakTime').value = record.breakTime;
-            
-            // Set travel time if exists
-            if (record.includeTravel) {
-                document.getElementById('includeTravelTime').checked = true;
-                document.getElementById('travelTimeSection').style.display = 'block';
-                
-                if (record.travelStartTime) {
-                    const [travelStartHour, travelStartMinute] = record.travelStartTime.split(':');
-                    document.getElementById('travelStartHour').value = travelStartHour;
-                    document.getElementById('travelStartMinute').value = travelStartMinute;
-                }
-                
-                if (record.travelEndTime) {
-                    const [travelEndHour, travelEndMinute] = record.travelEndTime.split(':');
-                    document.getElementById('travelEndHour').value = travelEndHour;
-                    document.getElementById('travelEndMinute').value = travelEndMinute;
-                }
-                
-                document.getElementById('travelDetails').value = record.travelDetails || '';
-            } else {
-                document.getElementById('includeTravelTime').checked = false;
-                document.getElementById('travelTimeSection').style.display = 'none';
-            }
-            
-            // Calculate and display hours
-            calculateTotalHours();
-            
-            // Scroll to form
-            document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
-            
-            showAlert('Now editing record', 'info');
-        }
-
-        function enterEditMode() {
-            document.getElementById('formTitle').textContent = 'Edit Hours Record';
-            document.getElementById('saveButtonText').textContent = 'Update Record';
-            document.getElementById('cancelEdit').style.display = 'inline-block';
-            document.getElementById('formCard').classList.add('edit-mode');
-        }
-
-        function exitEditMode() {
-            document.getElementById('formTitle').textContent = 'Register New Hours';
-            document.getElementById('saveButtonText').textContent = 'Save Record';
-            document.getElementById('cancelEdit').style.display = 'none';
-            document.getElementById('formCard').classList.remove('edit-mode');
-            document.getElementById('editId').value = '';
-        }
-
-        function cancelEdit() {
-            resetForm();
-            exitEditMode();
-            showAlert('Edit cancelled', 'info');
-        }
-
         function resetForm() {
             document.getElementById('hourForm').reset();
             const today = new Date().toISOString().split('T')[0];
@@ -1002,7 +817,6 @@
             document.getElementById('calculatedHours').textContent = '0:00 hours';
             document.getElementById('calculatedTravelTime').textContent = '0:00 hours';
             document.getElementById('calculatedTotalHours').style.display = 'none';
-            exitEditMode();
         }
 
         function loadRecords() {
@@ -1050,9 +864,6 @@
                         ${record.travelDetails ? `<div class="mt-1"><small class="text-muted"><i class="fas fa-info-circle me-1"></i>${record.travelDetails}</small></div>` : ''}
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-info me-1" onclick="editRecord(${record.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
                         <button class="btn btn-sm btn-danger" onclick="deleteRecord(${record.id})">
                             <i class="fas fa-trash"></i>
                         </button>
